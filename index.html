@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Күүл Кино — Монгол кино үзэх</title>
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(14,14,14,.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 0.5px solid var(--border);
+  padding: 0 32px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 58px;
+}
+.nav-logo { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--text); }
+.nav-logo span { color: var(--accent); }
+.nav-link {
+  font-size: 13px; color: var(--text2);
+  padding: 7px 16px; border-radius: 8px;
+  border: 0.5px solid var(--border); background: transparent; cursor: pointer;
+  transition: all .15s; display: inline-flex; align-items: center; gap: 6px;
+}
+.nav-link:hover { color: var(--text); background: var(--bg3); border-color: var(--border2); }
+
+.hero { padding: 80px 0 56px; text-align: center; }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--accent); font-weight: 500;
+  letter-spacing: .06em; text-transform: uppercase;
+  margin-bottom: 20px;
+  border: 0.5px solid rgba(204,120,92,.3);
+  padding: 5px 14px; border-radius: 20px;
+}
+.hero h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(36px, 6vw, 60px);
+  line-height: 1.12; color: var(--text); margin-bottom: 16px;
+}
+.hero h1 em { font-style: italic; color: var(--accent); }
+.hero-sub { font-size: 15px; color: var(--text2); max-width: 380px; margin: 0 auto 32px; line-height: 1.7; }
+.search-bar { display: flex; gap: 10px; max-width: 420px; margin: 0 auto; }
+.search-bar input { border-radius: 50px; padding: 11px 20px; }
+.search-bar .btn { border-radius: 50px; }
+
+.container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+.genre-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+.genre-pill {
+  padding: 6px 16px; border-radius: 20px; font-size: 13px;
+  background: var(--bg2); border: 0.5px solid var(--border);
+  color: var(--text2); cursor: pointer; transition: all .15s;
+}
+.genre-pill:hover, .genre-pill.active {
+  background: rgba(204,120,92,.14); border-color: rgba(204,120,92,.35); color: var(--accent2);
+}
+.section-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px; font-size: 13px; color: var(--text2);
+}
+.movie-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+  gap: 16px; padding-bottom: 60px;
+}
+.movie-card {
+  cursor: pointer; border-radius: var(--radius-lg); overflow: hidden;
+  border: 0.5px solid var(--border); background: var(--bg2);
+  transition: transform .2s, border-color .2s;
+}
+.movie-card:hover { transform: translateY(-4px); border-color: var(--border2); }
+.movie-poster {
+  aspect-ratio: 2/3; background: var(--bg3); position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.movie-poster img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+.movie-card:hover .movie-poster img { transform: scale(1.04); }
+.poster-ph { display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--text3); font-size: 12px; }
+.poster-ph i { font-size: 30px; }
+.movie-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.72) 0%, transparent 55%);
+  opacity: 0; transition: opacity .2s;
+  display: flex; align-items: flex-end; justify-content: center; padding-bottom: 14px;
+}
+.movie-card:hover .movie-overlay { opacity: 1; }
+.overlay-play {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--accent); display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 17px; padding-left: 2px;
+}
+.genre-pip {
+  position: absolute; top: 8px; left: 8px;
+  background: rgba(0,0,0,.72); color: var(--accent2);
+  font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 500;
+}
+.rating-pip {
+  position: absolute; top: 8px; right: 8px;
+  background: rgba(0,0,0,.72); color: var(--text2);
+  font-size: 10px; padding: 2px 6px; border-radius: 4px;
+}
+.movie-info { padding: 11px; }
+.movie-title { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+.movie-meta { font-size: 11px; color: var(--text3); display: flex; gap: 8px; }
+.empty-state { text-align: center; padding: 72px 20px; color: var(--text3); grid-column: 1/-1; }
+.empty-state i { font-size: 38px; display: block; margin-bottom: 10px; }
+.skeleton { background: var(--bg2); border-radius: var(--radius-lg); border: 0.5px solid var(--border); overflow: hidden; }
+.sk-p { aspect-ratio: 2/3; background: var(--bg3); animation: shimmer 1.4s infinite; background: linear-gradient(90deg,var(--bg3) 25%,var(--bg2) 50%,var(--bg3) 75%); background-size: 200% 100%; }
+.sk-l { height: 11px; margin: 12px 11px 6px; border-radius: 4px; background: linear-gradient(90deg,var(--bg3) 25%,var(--bg2) 50%,var(--bg3) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
+.sk-l.s { width: 55%; height: 9px; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+footer { border-top: 0.5px solid var(--border); padding: 24px; text-align: center; font-size: 12px; color: var(--text3); }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-logo">Күүл<span>Кино</span></div>
+  <button class="nav-link" onclick="location.href='watch.html'">
+    <i class="ti ti-key" style="font-size:14px"></i> Нэвтрэх
+  </button>
+</nav>
+
+<div class="container">
+  <div class="hero fade-up">
+    <div class="hero-eyebrow"><i class="ti ti-sparkles" style="font-size:12px"></i> Монгол кино</div>
+    <h1>Кино үзэх<br><em>хамгийн хялбар</em> арга</h1>
+    <p class="hero-sub">Танд тусгайлан илгээсэн линкээр орж хүссэн киногоо үзнэ үү.</p>
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Кино хайх..." oninput="filterMovies()">
+      <button class="btn btn-primary"><i class="ti ti-search" style="font-size:15px"></i></button>
+    </div>
+  </div>
+
+  <div class="genre-pills" id="genre-pills">
+    <div class="genre-pill active" onclick="setGenre('all',this)">Бүгд</div>
+  </div>
+  <div class="section-bar">
+    <span id="movie-count">Ачааллаж байна...</span>
+  </div>
+  <div class="movie-grid" id="movie-grid">
+    <div class="skeleton"><div class="sk-p"></div><div class="sk-l"></div><div class="sk-l s"></div></div>
+    <div class="skeleton"><div class="sk-p"></div><div class="sk-l"></div><div class="sk-l s"></div></div>
+    <div class="skeleton"><div class="sk-p"></div><div class="sk-l"></div><div class="sk-l s"></div></div>
+    <div class="skeleton"><div class="sk-p"></div><div class="sk-l"></div><div class="sk-l s"></div></div>
+    <div class="skeleton"><div class="sk-p"></div><div class="sk-l"></div><div class="sk-l s"></div></div>
+    <div class="skeleton"><div class="sk-p"></div><div class="sk-l"></div><div class="sk-l s"></div></div>
+  </div>
+</div>
+
+<footer>
+  <span style="font-family:'DM Serif Display',serif;font-size:16px;color:var(--text2)">Күүл<span style="color:var(--accent)">Кино</span></span>
+  <p style="margin-top:6px">© 2024 · Монгол кино үзэх тавцан</p>
+</footer>
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script>
+let allMovies = [], activeGenre = 'all';
+
+async function loadMovies() {
+  const { data, error } = await sb.from('movies').select('*').order('created_at', { ascending: false });
+  if (error || !data) {
+    el('movie-grid').innerHTML = '<div class="empty-state"><i class="ti ti-wifi-off"></i><p>Холболт амжилтгүй</p></div>';
+    el('movie-count').textContent = '0 кино';
+    return;
+  }
+  allMovies = data;
+  buildGenres();
+  renderMovies(allMovies);
+}
+
+function buildGenres() {
+  const genres = [...new Set(allMovies.map(m => m.genre).filter(Boolean))];
+  const pills = el('genre-pills');
+  pills.innerHTML = '<div class="genre-pill active" onclick="setGenre(\'all\',this)">Бүгд</div>';
+  genres.forEach(g => {
+    const d = document.createElement('div');
+    d.className = 'genre-pill'; d.textContent = g;
+    d.onclick = function() { setGenre(g, this); };
+    pills.appendChild(d);
+  });
+}
+
+function setGenre(g, btn) {
+  activeGenre = g;
+  document.querySelectorAll('.genre-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  filterMovies();
+}
+
+function filterMovies() {
+  const q = (el('search-input').value || '').toLowerCase();
+  let list = activeGenre === 'all' ? allMovies : allMovies.filter(m => m.genre === activeGenre);
+  if (q) list = list.filter(m => m.title?.toLowerCase().includes(q));
+  renderMovies(list);
+}
+
+function renderMovies(list) {
+  el('movie-count').textContent = list.length + ' кино';
+  if (!list.length) {
+    el('movie-grid').innerHTML = '<div class="empty-state"><i class="ti ti-movie-off"></i><p>Кино олдсонгүй</p></div>';
+    return;
+  }
+  el('movie-grid').innerHTML = list.map(m => `
+    <div class="movie-card" onclick="location.href='watch.html?movie=${m.id}'">
+      <div class="movie-poster">
+        ${m.poster_url
+          ? `<img src="${m.poster_url}" alt="${m.title}" loading="lazy">`
+          : `<div class="poster-ph"><i class="ti ti-movie"></i><span>${m.genre||''}</span></div>`}
+        ${m.genre ? `<div class="genre-pip">${m.genre}</div>` : ''}
+        ${m.rating ? `<div class="rating-pip">${m.rating}</div>` : ''}
+        <div class="movie-overlay"><div class="overlay-play"><i class="ti ti-player-play"></i></div></div>
+      </div>
+      <div class="movie-info">
+        <div class="movie-title">${m.title}</div>
+        <div class="movie-meta">
+          <span>${m.year||''}</span>
+          ${m.duration ? `<span>${m.duration}мин</span>` : ''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+loadMovies();
+</script>
+</body>
+</html>

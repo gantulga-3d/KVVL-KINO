@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin — Күүл Кино</title>
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-box{width:100%;max-width:360px;background:var(--bg2);border:0.5px solid var(--border);border-radius:20px;padding:36px 32px;text-align:center}
+.login-logo{font-family:'DM Serif Display',serif;font-size:26px;margin-bottom:4px}
+.login-logo span{color:var(--accent)}
+.login-sub{font-size:12px;color:var(--text3);margin-bottom:28px}
+.login-err{background:rgba(192,80,80,.12);border:0.5px solid rgba(192,80,80,.3);color:#e08080;font-size:13px;padding:9px 14px;border-radius:8px;margin-top:12px;display:none}
+#admin-screen{display:none;min-height:100vh}
+.admin-layout{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;flex-shrink:0;background:var(--bg2);border-right:0.5px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+.sidebar-logo{padding:20px 20px 14px;font-family:'DM Serif Display',serif;font-size:20px;border-bottom:0.5px solid var(--border)}
+.sidebar-logo span{color:var(--accent)}
+.sidebar-logo small{display:block;font-family:'DM Sans',sans-serif;font-size:11px;color:var(--text3);font-weight:400;margin-top:2px}
+.nav-section{font-size:10px;font-weight:500;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;padding:16px 20px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;color:var(--text2);cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:all .15s}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.nav-item.active{color:var(--text);background:rgba(204,120,92,.12);border-right:2px solid var(--accent)}
+.nav-item i{font-size:16px}
+.sidebar-bottom{margin-top:auto;padding:16px 20px;border-top:0.5px solid var(--border)}
+.logout-btn{width:100%;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text3);background:none;border:none;cursor:pointer;padding:8px 0;transition:color .15s}
+.logout-btn:hover{color:var(--danger)}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{padding:0 28px;height:56px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border);background:rgba(14,14,14,.8);backdrop-filter:blur(8px);position:sticky;top:0;z-index:10}
+.topbar-title{font-size:15px;font-weight:500}
+.content{padding:28px;flex:1}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:28px}
+.stat-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:18px}
+.stat-label{font-size:12px;color:var(--text3);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.stat-val{font-size:28px;font-weight:500;color:var(--text);line-height:1;margin-bottom:4px}
+.stat-sub{font-size:11px;color:var(--text3)}
+.recent-list{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.recent-row{display:flex;align-items:center;gap:14px;padding:12px 16px;border-bottom:0.5px solid var(--border)}
+.recent-row:last-child{border-bottom:none}
+.recent-thumb{width:36px;height:54px;background:var(--bg3);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.recent-info{flex:1;min-width:0}
+.recent-title{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.recent-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.movie-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:14px}
+.m-admin-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.m-admin-poster{aspect-ratio:2/3;background:var(--bg3);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.m-admin-poster img{width:100%;height:100%;object-fit:cover}
+.m-admin-poster-ph{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text3);font-size:11px}
+.m-admin-poster-ph i{font-size:26px}
+.m-genre-dot{position:absolute;top:7px;left:7px;background:rgba(0,0,0,.75);color:var(--accent2);font-size:9px;padding:2px 7px;border-radius:3px}
+.m-admin-info{padding:10px}
+.m-admin-title{font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.m-admin-meta{font-size:11px;color:var(--text3);margin-bottom:8px}
+.m-admin-actions{display:flex;gap:6px}
+.form-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:24px;max-width:580px}
+.token-table-wrap{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.token-table{width:100%;border-collapse:collapse}
+.token-table th{font-size:11px;font-weight:500;color:var(--text3);padding:10px 16px;text-align:left;border-bottom:0.5px solid var(--border)}
+.token-table td{font-size:13px;padding:11px 16px;border-bottom:0.5px solid var(--border);color:var(--text)}
+.token-table tr:last-child td{border-bottom:none}
+.token-table tr:hover td{background:rgba(255,255,255,.025)}
+.code-pill{font-family:monospace;font-size:12px;background:var(--bg3);padding:3px 9px;border-radius:5px;color:var(--text2)}
+.gen-link-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;background:var(--bg3);border:0.5px solid var(--border);border-radius:8px;padding:8px 12px}
+.gen-link-code{font-family:monospace;font-size:12px;color:var(--text2);flex:1;word-break:break-all}
+.page{display:none}
+.page.active{display:block}
+.empty-state{text-align:center;padding:60px 20px;color:var(--text3);grid-column:1/-1}
+.empty-state i{font-size:36px;display:block;margin-bottom:10px}
+.empty-state p{font-size:13px}
+.alert{padding:11px 16px;border-radius:var(--radius);font-size:13px;margin-bottom:18px;display:flex;align-items:flex-start;gap:9px;line-height:1.5}
+.alert-info{background:rgba(60,120,200,.1);border:0.5px solid rgba(60,120,200,.25);color:#80aadd}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box fade-up">
+    <div class="login-logo">Күүл<span>Кино</span></div>
+    <div class="login-sub">Админ хэсэг</div>
+    <div class="form-group" style="margin-bottom:12px">
+      <input type="password" id="admin-pw" placeholder="Нууц үг" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="doLogin()">
+      <i class="ti ti-login" style="font-size:15px"></i> Нэвтрэх
+    </button>
+    <div class="login-err" id="login-err">Нууц үг буруу байна.</div>
+  </div>
+</div>
+
+<div id="admin-screen">
+  <div class="admin-layout">
+    <div class="sidebar">
+      <div class="sidebar-logo">Күүл<span>Кино</span><small>Админ самбар</small></div>
+      <div class="nav-section">Үндсэн</div>
+      <button class="nav-item active" onclick="goPage('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Хяналтын самбар</button>
+      <button class="nav-item" onclick="goPage('movies',this)"><i class="ti ti-movie"></i> Кинонууд</button>
+      <button class="nav-item" onclick="goPage('addmovie',this)"><i class="ti ti-circle-plus"></i> Кино нэмэх</button>
+      <div class="nav-section">Хандалт</div>
+      <button class="nav-item" onclick="goPage('tokens',this)"><i class="ti ti-key"></i> Токенууд</button>
+      <button class="nav-item" onclick="goPage('gentoken',this)"><i class="ti ti-link"></i> Линк үүсгэх</button>
+      <div class="nav-section">Систем</div>
+      <button class="nav-item" onclick="goPage('settings',this)"><i class="ti ti-settings"></i> Тохиргоо</button>
+      <div class="sidebar-bottom">
+        <button class="logout-btn" onclick="doLogout()"><i class="ti ti-logout" style="font-size:15px"></i> Гарах</button>
+      </div>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-title" id="topbar-title">Хяналтын самбар</div>
+        <div id="topbar-action"></div>
+      </div>
+      <div class="content">
+
+        <div class="page active" id="page-dashboard">
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-label"><i class="ti ti-movie" style="font-size:14px"></i>Нийт кино</div><div class="stat-val" id="s-movies">—</div><div class="stat-sub">кино</div></div>
+            <div class="stat-card"><div class="stat-label"><i class="ti ti-key" style="font-size:14px"></i>Нийт токен</div><div class="stat-val" id="s-tokens">—</div><div class="stat-sub">токен</div></div>
+            <div class="stat-card"><div class="stat-label"><i class="ti ti-check" style="font-size:14px"></i>Ашиглагдсан</div><div class="stat-val" id="s-used">—</div><div class="stat-sub">токен</div></div>
+            <div class="stat-card"><div class="stat-label"><i class="ti ti-circle-dot" style="font-size:14px"></i>Идэвхтэй</div><div class="stat-val" id="s-active">—</div><div class="stat-sub">токен</div></div>
+          </div>
+          <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:12px">Сүүлд нэмэгдсэн кинонууд</div>
+          <div class="recent-list" id="recent-list"></div>
+        </div>
+
+        <div class="page" id="page-movies">
+          <div class="movie-admin-grid" id="movie-admin-grid"></div>
+        </div>
+
+        <div class="page" id="page-addmovie">
+          <div class="form-card">
+            <input type="hidden" id="edit-id">
+            <div class="form-group"><label class="form-label">Киноны нэр</label><input type="text" id="f-title" placeholder="Монгол нэр"></div>
+            <div class="form-grid form-grid-2">
+              <div class="form-group"><label class="form-label">Жил</label><input type="number" id="f-year" placeholder="2024"></div>
+              <div class="form-group"><label class="form-label">Урт (мин)</label><input type="number" id="f-dur" placeholder="120"></div>
+            </div>
+            <div class="form-grid form-grid-2">
+              <div class="form-group"><label class="form-label">Төрөл</label>
+                <select id="f-genre"><option>Драм</option><option>Уран зөгнөлт</option><option>Экшн</option><option>Инээдмийн</option><option>Аймшгийн</option><option>Романтик</option><option>Баримтат</option><option>Анимейшн</option><option>Хүүхдийн</option></select>
+              </div>
+              <div class="form-group"><label class="form-label">Насны ангилал</label>
+                <select id="f-rating"><option>Ерөнхий</option><option>12+</option><option>16+</option><option>18+</option></select>
+              </div>
+            </div>
+            <div class="form-group"><label class="form-label">YouTube Video ID</label><input type="text" id="f-yt" placeholder="dQw4w9WgXcQ"></div>
+            <div class="form-group"><label class="form-label">Постер URL</label><input type="text" id="f-poster" placeholder="https://..."></div>
+            <div class="form-group"><label class="form-label">Тайлбар</label><textarea id="f-desc" placeholder="Товч агуулга..."></textarea></div>
+            <div style="display:flex;gap:10px;margin-top:4px">
+              <button class="btn btn-primary" onclick="saveMovie()"><i class="ti ti-check" style="font-size:14px"></i> Хадгалах</button>
+              <button class="btn btn-ghost" onclick="goPage('movies',null)">Болих</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="page" id="page-tokens">
+          <div class="token-table-wrap">
+            <table class="token-table">
+              <thead><tr><th>Код</th><th>Кино / Төрөл</th><th>Үүссэн</th><th>Статус</th><th>Үйлдэл</th></tr></thead>
+              <tbody id="token-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="page" id="page-gentoken">
+          <div class="form-card">
+            <div class="alert alert-info"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i>Нэг токен — нэг хүн, нэг удаа. Үүссэн линкийг Messenger-ээр илгээнэ.</div>
+            <div class="form-group"><label class="form-label">Төрөл</label>
+              <select id="t-type" onchange="toggleMovieSel()">
+                <option value="single">Нэг кино (single)</option>
+                <option value="full">Бүх кино (багц)</option>
+              </select>
+            </div>
+            <div class="form-group" id="movie-sel-wrap"><label class="form-label">Кино сонгох</label><select id="t-movie"></select></div>
+            <div class="form-group"><label class="form-label">Хэдэн линк</label><input type="number" id="t-count" value="1" min="1" max="20"></div>
+            <div style="display:flex;gap:10px;margin-top:4px">
+              <button class="btn btn-primary" onclick="genTokens()"><i class="ti ti-link" style="font-size:14px"></i> Линк үүсгэх</button>
+              <button class="btn btn-ghost" onclick="goPage('tokens',null)">Токенууд харах</button>
+            </div>
+            <div id="gen-result" style="display:none;margin-top:20px">
+              <div style="font-size:12px;color:var(--text2);margin-bottom:10px">Линкүүдийг хуулж Messenger-т илгээнэ үү:</div>
+              <div id="gen-links"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page" id="page-settings">
+          <div class="form-card">
+            <div class="alert alert-info"><i class="ti ti-info-circle" style="font-size:16px;flex-shrink:0"></i>Supabase тохиргоог <code style="font-size:12px">js/config.js</code> файлд өөрчилнө. Admin нууц үгийг <code style="font-size:12px">admin.html</code> дотор өөрчилнө.</div>
+            <div class="form-group"><label class="form-label">Сайтын нэр</label><input type="text" value="Күүл Кино"></div>
+            <div style="margin-top:4px"><button class="btn btn-primary"><i class="ti ti-check" style="font-size:14px"></i> Хадгалах</button></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="del-modal">
+  <div class="modal">
+    <div class="modal-title">Кино устгах уу?</div>
+    <p class="modal-sub">Энэ кино болон холбогдох токенууд бүгд устах болно. Буцаах боломжгүй.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="el('del-modal').classList.remove('open')">Болих</button>
+      <button class="btn btn-danger" id="del-confirm-btn"><i class="ti ti-trash" style="font-size:14px"></i> Устгах</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/config.js"></script>
+<script>
+const ADMIN_PW = 'coolkino2024';
+function doLogin(){
+  if(el('admin-pw').value===ADMIN_PW){
+    el('login-screen').style.display='none';
+    el('admin-screen').style.display='block';
+    loadDashboard();
+  } else {
+    el('login-err').style.display='block';
+    el('admin-pw').value='';
+  }
+}
+function doLogout(){el('admin-screen').style.display='none';el('login-screen').style.display='flex';}
+el('admin-pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+const pageTitles={dashboard:'Хяналтын самбар',movies:'Кинонууд',addmovie:'Кино нэмэх / засах',tokens:'Токенууд',gentoken:'Линк үүсгэх',settings:'Тохиргоо'};
+
+function goPage(name,navEl){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(navEl){document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));navEl.classList.add('active');}
+  el('topbar-title').textContent=pageTitles[name]||name;
+  const ta=el('topbar-action'); ta.innerHTML='';
+  if(name==='movies'){ta.innerHTML='<button class="btn btn-primary btn-sm" onclick="goPage(\'addmovie\',null);clearForm()"><i class="ti ti-plus" style="font-size:13px"></i> Нэмэх</button>';loadMovies();}
+  if(name==='tokens'){ta.innerHTML='<button class="btn btn-primary btn-sm" onclick="goPage(\'gentoken\',null)"><i class="ti ti-link" style="font-size:13px"></i> Линк үүсгэх</button>';loadTokens();}
+  if(name==='gentoken') populateMovieSel();
+  if(name==='dashboard') loadDashboard();
+  if(name==='addmovie') clearForm();
+}
+
+async function loadDashboard(){
+  const [{count:mc},{data:tokens}]=await Promise.all([
+    sb.from('movies').select('*',{count:'exact',head:true}),
+    sb.from('tokens').select('used')
+  ]);
+  const used=tokens?.filter(t=>t.used).length||0;
+  el('s-movies').textContent=mc||0;
+  el('s-tokens').textContent=tokens?.length||0;
+  el('s-used').textContent=used;
+  el('s-active').textContent=(tokens?.length||0)-used;
+  const {data:recent}=await sb.from('movies').select('*').order('created_at',{ascending:false}).limit(5);
+  el('recent-list').innerHTML=(recent||[]).map(m=>`
+    <div class="recent-row">
+      <div class="recent-thumb">${m.poster_url?`<img src="${m.poster_url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px">` : '<i class="ti ti-movie" style="font-size:16px;color:var(--text3)"></i>'}</div>
+      <div class="recent-info"><div class="recent-title">${m.title}</div><div class="recent-meta">${m.year||''} · ${m.genre||''}</div></div>
+      <span class="badge badge-muted" style="font-size:11px">${m.rating||''}</span>
+    </div>
+  `).join('')||'<div style="padding:32px;text-align:center;color:var(--text3);font-size:13px">Кино байхгүй</div>';
+}
+
+async function loadMovies(){
+  const {data:movies}=await sb.from('movies').select('*').order('created_at',{ascending:false});
+  const grid=el('movie-admin-grid');
+  if(!movies?.length){grid.innerHTML='<div class="empty-state"><i class="ti ti-movie-off"></i><p>Кино байхгүй</p></div>';return;}
+  grid.innerHTML=movies.map(m=>`
+    <div class="m-admin-card">
+      <div class="m-admin-poster">
+        ${m.poster_url?`<img src="${m.poster_url}" alt="${m.title}" loading="lazy">`:`<div class="m-admin-poster-ph"><i class="ti ti-movie"></i><span>${m.genre||''}</span></div>`}
+        ${m.genre?`<div class="m-genre-dot">${m.genre}</div>`:''}
+      </div>
+      <div class="m-admin-info">
+        <div class="m-admin-title">${m.title}</div>
+        <div class="m-admin-meta">${m.year||''} ${m.duration?'· '+m.duration+'мин':''}</div>
+        <div class="m-admin-actions">
+          <button class="btn-icon" title="Засах" onclick='editMovie(${JSON.stringify(m).replace(/'/g,"&apos;")})'>
+            <i class="ti ti-edit"></i></button>
+          <button class="btn-icon" title="Токен үүсгэх" onclick="quickToken('${m.id}')">
+            <i class="ti ti-link"></i></button>
+          <button class="btn-icon del" title="Устгах" onclick="confirmDelete('${m.id}')">
+            <i class="ti ti-trash"></i></button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadTokens(){
+  const {data:tokens}=await sb.from('tokens').select('*, movies(title)').order('created_at',{ascending:false});
+  const tbody=el('token-tbody');
+  if(!tokens?.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text3)">Токен байхгүй</td></tr>';return;}
+  tbody.innerHTML=tokens.map(t=>`
+    <tr>
+      <td><span class="code-pill">${t.code}</span></td>
+      <td>${t.type==='full'?'<span class="badge badge-full">Багц</span>':(t.movies?.title||'—')}</td>
+      <td style="color:var(--text3)">${formatDate(t.created_at)}</td>
+      <td><span class="badge ${t.used?'badge-muted':'badge-success'}">${t.used?'Ашиглагдсан':'Идэвхтэй'}</span></td>
+      <td><div style="display:flex;gap:6px">
+        <button class="btn-icon" onclick="copyLink('${t.code}')"><i class="ti ti-copy"></i></button>
+        <button class="btn-icon del" onclick="deleteToken('${t.id}')"><i class="ti ti-trash"></i></button>
+      </div></td>
+    </tr>
+  `).join('');
+}
+
+function copyLink(code){
+  const link=location.origin+location.pathname.replace('admin.html','watch.html')+'?token='+code;
+  navigator.clipboard?.writeText(link).catch(()=>{});
+  toast('Линк хуулагдлаа ✓','success');
+}
+
+async function deleteToken(id){
+  await sb.from('tokens').delete().eq('id',id);
+  toast('Токен устгагдлаа','success');
+  loadTokens();
+}
+
+function clearForm(){
+  ['f-title','f-year','f-dur','f-yt','f-poster','f-desc'].forEach(id=>{const e=el(id);if(e)e.value='';});
+  el('edit-id').value='';
+}
+
+function editMovie(m){
+  el('f-title').value=m.title||'';
+  el('f-year').value=m.year||'';
+  el('f-dur').value=m.duration||'';
+  el('f-yt').value=m.youtube_id||'';
+  el('f-poster').value=m.poster_url||'';
+  el('f-desc').value=m.description||'';
+  el('f-genre').value=m.genre||'Драм';
+  el('f-rating').value=m.rating||'Ерөнхий';
+  el('edit-id').value=m.id;
+  goPage('addmovie',null);
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+}
+
+async function saveMovie(){
+  const title=el('f-title').value.trim();
+  if(!title){toast('Нэрийг оруулна уу','error');return;}
+  const data={title,year:parseInt(el('f-year').value)||null,duration:parseInt(el('f-dur').value)||null,genre:el('f-genre').value,rating:el('f-rating').value,youtube_id:el('f-yt').value.trim()||null,poster_url:el('f-poster').value.trim()||null,description:el('f-desc').value.trim()||null};
+  const editId=el('edit-id').value;
+  let error;
+  if(editId){({error}=await sb.from('movies').update(data).eq('id',editId));}
+  else{({error}=await sb.from('movies').insert(data));}
+  if(error){toast('Алдаа: '+error.message,'error');return;}
+  toast(editId?'Кино засагдлаа ✓':'Кино нэмэгдлаа ✓','success');
+  goPage('movies',document.querySelector('.nav-item:nth-child(3)'));
+}
+
+function confirmDelete(movieId){
+  el('del-modal').classList.add('open');
+  el('del-confirm-btn').onclick=async()=>{
+    await sb.from('tokens').delete().eq('movie_id',movieId);
+    await sb.from('movies').delete().eq('id',movieId);
+    el('del-modal').classList.remove('open');
+    toast('Кино устгагдлаа','success');
+    loadMovies();
+  };
+}
+
+async function populateMovieSel(){
+  const {data:movies}=await sb.from('movies').select('id,title').order('title');
+  el('t-movie').innerHTML=(movies||[]).map(m=>`<option value="${m.id}">${m.title}</option>`).join('');
+}
+
+function toggleMovieSel(){
+  el('movie-sel-wrap').style.display=el('t-type').value==='full'?'none':'block';
+}
+
+async function genTokens(){
+  const type=el('t-type').value;
+  const count=parseInt(el('t-count').value)||1;
+  const movieId=type==='single'?el('t-movie').value:null;
+  const rows=[],codes=[];
+  for(let i=0;i<count;i++){
+    const code=genToken(type==='full'?'KKF':'KK');
+    rows.push({code,type,movie_id:movieId||null,used:false});
+    codes.push(code);
+  }
+  const {error}=await sb.from('tokens').insert(rows);
+  if(error){toast('Алдаа: '+error.message,'error');return;}
+  const base=location.origin+location.pathname.replace('admin.html','watch.html')+'?token=';
+  el('gen-result').style.display='block';
+  el('gen-links').innerHTML=codes.map(c=>`
+    <div class="gen-link-row">
+      <span class="gen-link-code">${base}${c}</span>
+      <button class="btn-icon" onclick="navigator.clipboard?.writeText('${base}${c}');toast('Хуулагдлаа ✓','success')"><i class="ti ti-copy"></i></button>
+    </div>
+  `).join('');
+  toast(count+'ш линк үүслээ ✓','success');
+}
+
+async function quickToken(movieId){
+  goPage('gentoken',null);
+  setTimeout(async()=>{
+    el('t-type').value='single';
+    toggleMovieSel();
+    await populateMovieSel();
+    el('t-movie').value=movieId;
+  },150);
+}
+
+el('admin-pw').focus();
+</script>
+</body>
+</html>
